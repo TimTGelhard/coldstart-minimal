@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# SessionStart. Prints the pointer block from PROGRESS.md into the session.
-# This is why there is no /coldstart command: the resume needs no typing.
+# SessionStart. Prints the active work block from PROGRESS.md and nothing else.
+#
+# The boundary is a marker, not a line count, so a block can be any length. The
+# `head` is a backstop, not the mechanism: it only bites if someone writes an essay
+# above the marker or deletes the marker entirely.
 set -u
 f="${CLAUDE_PROJECT_DIR:-$PWD}/PROGRESS.md"
 [ -f "$f" ] || exit 0
-sed -n '/^## Now/,/^## Open/p' "$f" | sed '$d'
+sed -n '1,/^---$/p' "$f" | sed '/^---$/d' | head -40

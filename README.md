@@ -17,8 +17,8 @@ takes it back out and leaves your notes alone.
 ## What lands in your project
 
 ```
-CLAUDE.md       the harness. Read every session. 1,388 bytes.
-PROGRESS.md     what you are doing, what is open, what happened last
+CLAUDE.md       the harness. Read every session. 1,656 bytes.
+PROGRESS.md     the work queue. Only the top block is ever loaded
 DECISIONS.md    one dated line per decision, newest at the top
 .claude/
   settings.json           registers the two hooks
@@ -31,17 +31,26 @@ That is the entire harness. Three files you own, four the installer owns.
 
 ## How it works
 
-**Opening.** The session-start hook prints the "Now" block of `PROGRESS.md` into the
-session before you say anything. That is why there is no `/coldstart` command: a command
-would be a worse version of a thing that already happens for free.
+**Opening.** The session-start hook prints the top block of `PROGRESS.md` into the session
+before you say anything. That is why there is no `/coldstart` command: a command would be a
+worse version of a thing that already happens for free.
+
+`PROGRESS.md` is a queue. The active block sits at the top, a `---` marks the end of it, and
+everything below is planned work waiting its turn. The hook reads to the marker and stops, so
+a block can be four lines or forty and the boundary is still right. A line offset would be
+wrong for every session, since sessions are not the same size. `CLAUDE.md` then tells the
+model to open that file only to write, never to catch up, which is what keeps the rest of the
+queue out of context rather than merely out of the printout.
+
+The effect: the queue can hold fifty planned sessions and still cost you one block.
 
 **Working.** `CLAUDE.md` carries five rules that cost about 1.4 KB and change every turn:
 be a collaborator and push back, state the goal in one sentence, grep `DECISIONS.md`
 before re-deciding something, verify instead of self-reporting, and stop and ask when the
 spec is ambiguous.
 
-**Closing.** `/done` rewrites the pointer, adds one line to the log, and appends any
-decision you made. `PROGRESS.md` stays short by construction: the log keeps five lines and
+**Closing.** `/done` deletes the finished block and promotes the next one from the queue
+into its place, adds one line to the log, and appends any decision you made. `PROGRESS.md` stays short by construction: the log keeps five lines and
 older ones are deleted, because git is the archive. `DECISIONS.md` is the one file allowed
 to grow, and it stays cheap because the rule is to grep it, never to read it whole.
 
@@ -61,8 +70,8 @@ for months, and nobody noticed by reading it.
 
 ## What it costs
 
-About 1,466 bytes of harness in your context at every session start, plus roughly 250 bytes
-of your own pointer. For scale, the full ColdStart tree it was cut down from carries 38,616
+About 1,734 bytes of harness in your context at every session start, plus one work block,
+which runs 200 to 600 bytes depending on how much the task needs. For scale, the full ColdStart tree it was cut down from carries 38,616
 bytes and 1,065 files.
 
 ## What it is not

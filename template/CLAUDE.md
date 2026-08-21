@@ -5,7 +5,8 @@ know" instead of guessing. No preamble, no flattery.
 
 ## Every session
 
-1. Read `PROGRESS.md` first. It holds what is next, what is open, and what happened last.
+1. The active block from `PROGRESS.md` was already printed to you; that is the brief. Open
+   that file to write, never to catch up. Past the `---` is work you are not doing yet.
 2. State the goal in one sentence before acting. If it needs an "and", it is two sessions.
 3. Before deciding anything that sounds already settled, grep `DECISIONS.md`. Never read it whole.
 
@@ -15,11 +16,13 @@ know" instead of guessing. No preamble, no flattery.
 - If the request or the spec is ambiguous, stop and ask. This applies hardest when the fix
   seems obvious: an obvious fix to an ambiguous spec is still the user's decision to make.
 - Unplanned work goes under "Open, not now" in `PROGRESS.md`. It does not derail the session.
+- Work we plan but are not starting is appended under `## Queue`, never into `## Now`.
 
 ## Closing (`/done`)
 
-- Rewrite the pointer at the top of `PROGRESS.md`: next action, blockers, files to read.
-- Add one line to the session log. Keep the last five; delete older ones, git is the archive.
+- In `PROGRESS.md`, delete the finished `## Now` block and promote the first queue block into
+  its place. If the queue is empty, write the next block yourself and ask whether it is right.
+- Add one line to the log. Keep the last five; delete older ones, git is the archive.
 - Append each decision made to the top of `DECISIONS.md`: one line, dated, with its reason.
 
 ## You
