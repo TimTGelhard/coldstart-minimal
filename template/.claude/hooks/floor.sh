@@ -24,6 +24,31 @@ case "$payload" in
     esac ;;
 esac
 
+# Reading a .env is a local leak. Committing one is a public leak that survives
+# the commit being deleted, because the object stays in forks, clones and caches.
+case "$payload" in
+  *'git add'*|*'git commit'*|*'git stash'*)
+    case "$payload" in
+      *.env.example*|*.env.sample*) ;;
+      *.env*)
+        deny 'refusing to stage a .env; a pushed secret stays public after the commit is deleted, and the fix is rotation. Put it in .gitignore, commit that, then stage the rest by name' ;;
+    esac ;;
+esac
+
+# The accident that actually happens: nothing in the command names the file.
+# Only fires while an unignored .env is really sitting there, so a clean tree
+# never sees it.
+case "$payload" in
+  *'git add -A'*|*'git add --all'*|*'git add ."'*|*'git add . '*|*'git commit -a'*|*'git commit --all'*)
+    if ! grep -Eqs '^!?\*?\.env' .gitignore; then
+      for f in .env .env.*; do
+        [ -f "$f" ] || continue
+        case "$f" in *.example|*.sample|*.template) continue ;; esac
+        deny "refusing to stage everything while $f is in the tree and not in .gitignore; ignore it and commit that first, or stage by name"
+      done
+    fi ;;
+esac
+
 case "$payload" in
   *curl*|*wget*)
     case "$payload" in

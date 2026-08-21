@@ -46,6 +46,21 @@ else
   cp "$SRC/.claude/settings.json" "$DEST/.claude/settings.json"; echo "wrote   .claude/settings.json"
 fi
 
+# The floor refuses to stage a .env, but the durable stop is git's own. A hook
+# can be unregistered; a .gitignore line travels with the repo and protects the
+# operator's own hands as well as the model's.
+if [ -e "$DEST/.gitignore" ]; then
+  if grep -Eqs '^!?\*?\.env' "$DEST/.gitignore"; then
+    echo "kept    .gitignore (already ignores .env)"
+  else
+    printf '\n# coldstart-minimal: secrets never reach a remote\n.env\n.env.*\n!.env.example\n' >> "$DEST/.gitignore"
+    echo "wrote   .gitignore (appended the .env rules)"
+  fi
+else
+  printf '# coldstart-minimal: secrets never reach a remote\n.env\n.env.*\n!.env.example\n' > "$DEST/.gitignore"
+  echo "wrote   .gitignore"
+fi
+
 resident=$(( $(wc -c < "$DEST/CLAUDE.md") + 78 ))
 echo
 echo "installed into $DEST"
